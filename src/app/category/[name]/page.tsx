@@ -12,12 +12,12 @@ function CategoryContent() {
   const { navigate } = useAppRouter()
   
   const { addItem: addToCart } = useCartStore()
-  const { fetchData, setSelectedProduct } = useShopStore()
+  const { fetchData, products } = useShopStore()
   
   // Get category name from URL
   const categoryName = params.name ? decodeURIComponent(params.name as string) : ''
   
-  // Fetch initial data
+  // SMART: Fetch data in background - don't block UI
   useEffect(() => {
     fetchData()
   }, [fetchData])

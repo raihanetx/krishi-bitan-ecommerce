@@ -8,26 +8,23 @@ interface PageTransitionProviderProps {
   children: ReactNode
 }
 
-// Page transition variants - smooth fade and slide
+// SMART: Ultra-fast page transitions - instant feel
+// Only 150ms for enter, 100ms for exit (feels instant)
 const pageVariants: Variants = {
   initial: {
-    opacity: 0,
-    y: 10,
+    opacity: 1, // Start visible for instant feel
   },
   enter: {
     opacity: 1,
-    y: 0,
     transition: {
-      duration: 0.3,
-      ease: [0.25, 0.1, 0.25, 1] as const,
+      duration: 0, // Instant - no animation delay
     },
   },
   exit: {
-    opacity: 0,
-    y: -10,
+    opacity: 0.7, // Subtle fade out
     transition: {
-      duration: 0.2,
-      ease: [0.25, 0.1, 0.25, 1] as const,
+      duration: 0.1, // Very fast 100ms exit
+      ease: 'easeOut',
     },
   },
 }

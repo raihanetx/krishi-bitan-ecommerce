@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useCallback, useMemo, useState } from 'react'
+import { Suspense, useEffect, useCallback, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import MainLayout from '@/components/layout/MainLayout'
 import ProductDetail from '@/components/shop/ProductDetail'
@@ -12,13 +12,10 @@ function ProductDetailContent() {
   const { navigate } = useAppRouter()
   
   const { addItem: addToCart } = useCartStore()
-  const { setSelectedProduct, products, fetchData, isLoading, lastFetch } = useShopStore()
+  const { setSelectedProduct, products, fetchData, isLoading, settingsLoaded } = useShopStore()
   
   // Get slug from URL
   const slug = params.slug as string
-  
-  // Track if we've attempted to fetch data
-  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false)
   
   // Extract product name from slug
   const productNameFromSlug = useMemo(() => {
@@ -28,7 +25,7 @@ function ProductDetailContent() {
     return decoded.replace(/-/g, ' ')
   }, [slug])
   
-  // Find product by matching name
+  // SMART: Find product by matching name - use cached products first!
   const product = useMemo(() => {
     if (!productNameFromSlug || products.length === 0) return null
     
@@ -48,13 +45,11 @@ function ProductDetailContent() {
     return null
   }, [productNameFromSlug, products])
   
-  // Fetch initial data - always fetch on mount to ensure we have products
+  // SMART: Fetch data in background only if needed
+  // Don't block the UI - show cached data first
   useEffect(() => {
-    const loadData = async () => {
-      await fetchData()
-      setHasAttemptedFetch(true)
-    }
-    loadData()
+    // Always trigger fetch to ensure fresh data, but don't wait for it
+    fetchData()
   }, [fetchData])
   
   // Set selected product when found
@@ -69,10 +64,19 @@ function ProductDetailContent() {
     navigate('shop')
   }, [navigate])
 
-  // Show loading while fetching OR if we haven't attempted fetch yet OR if products are empty but we're still loading
-  const showLoading = isLoading || !hasAttemptedFetch || (products.length === 0 && !lastFetch)
-  
-  if (showLoading) {
+  // SMART: Show product IMMEDIATELY if we have it in cache
+  // Only show skeleton if we have NO data at all
+  if (product) {
+    return (
+      <ProductDetail 
+        setView={handleNavigate} 
+        addToCart={addToCart}
+      />
+    )
+  }
+
+  // Show skeleton only if we're loading AND have no cached products
+  if (isLoading && products.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="w-full h-full absolute inset-0 skeleton-shimmer" />
@@ -80,7 +84,8 @@ function ProductDetailContent() {
     )
   }
 
-  if (!product) {
+  // If we have products but couldn't find this one
+  if (!product && products.length > 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
         <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -98,11 +103,11 @@ function ProductDetailContent() {
     )
   }
 
+  // Fallback skeleton
   return (
-    <ProductDetail 
-      setView={handleNavigate} 
-      addToCart={addToCart}
-    />
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="w-full h-full absolute inset-0 skeleton-shimmer" />
+    </div>
   )
 }
 

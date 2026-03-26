@@ -5,22 +5,24 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import MainLayout from '@/components/layout/MainLayout'
 import Shop from '@/components/shop/Shop'
 import ContentPage from '@/components/content/ContentPage'
-import { useShopStore } from '@/store'
+import { useShopStore, useCartStore } from '@/store'
 import { useAppRouter } from '@/hooks/useAppRouter'
 import { useVisitorTracking } from '@/hooks/useVisitorTracking'
-import { ShopPageSkeleton, LoadingPage } from '@/components/ui/skeleton'
+import { LoadingPage } from '@/components/ui/skeleton'
 
 function HomeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { navigate } = useAppRouter()
   
-  const { fetchData, isLoading, settingsLoaded } = useShopStore()
+  const { fetchData, isLoading, settingsLoaded, products, settings } = useShopStore()
+  const { addItem: addToCart } = useCartStore()
   
   // Track visitor session for analytics
   useVisitorTracking()
   
-  // Fetch initial data
+  // SMART: Fetch data in background - don't block UI
+  // The store will use cached data if available
   useEffect(() => {
     fetchData()
   }, [fetchData])
@@ -35,9 +37,12 @@ function HomeContent() {
     navigate('shop')
   }, [navigate])
   
-  // Show professional skeleton loading during initial load
-  if (isLoading || !settingsLoaded) {
-    return <ShopPageSkeleton />
+  // SMART: Show content IMMEDIATELY if we have cached data
+  // Only show skeleton on VERY first visit (no cache)
+  const hasCachedData = products.length > 0 || settingsLoaded
+  
+  if (!hasCachedData && isLoading) {
+    return <LoadingPage />
   }
   
   // Handle content pages (about, terms, etc.)
@@ -54,7 +59,7 @@ function HomeContent() {
     <MainLayout>
       <Shop 
         setView={handleNavigate} 
-        addToCart={() => {}} 
+        addToCart={addToCart}
         onCategoryClick={handleCategoryClick}
       />
     </MainLayout>

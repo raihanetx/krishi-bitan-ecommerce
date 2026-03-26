@@ -39,6 +39,7 @@ export default function CategoryProducts({ setView, addToCart, categoryName }: C
   const router = useRouter()
   const { products, isLoading, fetchData, setSelectedProduct } = useShopStore()
   
+  // SMART: Fetch in background, don't block UI
   useEffect(() => {
     fetchData()
   }, [fetchData])
@@ -48,11 +49,30 @@ export default function CategoryProducts({ setView, addToCart, categoryName }: C
     p.status === 'active' && p.category === categoryName && p.price > 0
   )
 
-  // Handle product click - navigate to product details page with product name in URL
-  const handleProductClick = async (productId: number, productName: string) => {
-    await setSelectedProduct(productId)
+  // SMART: Instant navigation - navigate first, load data in background
+  const handleProductClick = (productId: number, productName: string) => {
+    // Navigate immediately
     const slug = createProductSlug(productName)
     router.push(`/${slug}`)
+    
+    // Load product data in background
+    setSelectedProduct(productId)
+  }
+
+  // SMART: Show content immediately if we have products
+  // Only show loading if we have NO products at all
+  if (products.length === 0 && isLoading) {
+    return (
+      <main className="flex-grow">
+        <section className="py-4 md:py-6">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <div className="w-full h-full absolute inset-0 skeleton-shimmer" />
+            </div>
+          </div>
+        </section>
+      </main>
+    )
   }
 
   return (
@@ -78,11 +98,7 @@ export default function CategoryProducts({ setView, addToCart, categoryName }: C
       {/* Products Grid */}
       <section className="pb-12">
         <div className="container mx-auto px-4 md:px-6">
-          {isLoading ? (
-            <div className="flex items-center justify-center min-h-[40vh]">
-              <p className="text-gray-500 text-lg font-medium animate-pulse">Loading...</p>
-            </div>
-          ) : categoryProducts.length > 0 ? (
+          {categoryProducts.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-5 justify-items-start">
               {categoryProducts.map((item) => {
                 const discountValue = item.discountValue ?? 0
@@ -104,7 +120,11 @@ export default function CategoryProducts({ setView, addToCart, categoryName }: C
                 return (
                   <div 
                     key={item.id} 
-                    onClick={() => handleProductClick(item.id, item.name)} 
+                    onClick={() => handleProductClick(item.id, item.name)}
+                    onMouseEnter={() => {
+                      // SMART: Prefetch on hover
+                      setSelectedProduct(item.id)
+                    }}
                     className="bg-white p-3 relative cursor-pointer transition-all duration-300 flex flex-col w-full min-h-[230px] md:min-h-[260px] border border-gray-200 rounded-xl hover:border-[#16a34a]"
                   >
                     {hasDiscount && (

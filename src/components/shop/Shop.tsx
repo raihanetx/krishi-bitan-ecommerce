@@ -294,8 +294,9 @@ export default function Shop({ setView, addToCart, onCategoryClick }: ShopProps)
     )
   }
 
-  // Show simple loading during initial load
-  if (isLoading || !settingsLoaded) {
+  // SMART: Show content IMMEDIATELY if we have ANY products
+  // Only show skeleton if we have NO data at all (first visit)
+  if (products.length === 0 && isLoading) {
     return <ShopPageSkeleton />
   }
 
@@ -570,14 +571,8 @@ export default function Shop({ setView, addToCart, onCategoryClick }: ShopProps)
                         onClick={() => handleProductClick(item.id, item.name)}
                         onMouseEnter={() => {
                           // SMART: Prefetch product details on hover for instant navigation!
-                          if ('requestIdleCallback' in window) {
-                            requestIdleCallback(() => {
-                              fetch(`/api/product-details?productId=${item.id}`, {
-                                method: 'GET',
-                                credentials: 'include',
-                              }).catch(() => {})
-                            })
-                          }
+                          // Load data into store so it's ready when clicked
+                          setSelectedProduct(item.id)
                         }}
                         className="bg-white p-3 relative cursor-pointer transition-all duration-300 flex flex-col w-full min-h-[230px] md:min-h-[260px] border border-gray-200 rounded-xl hover:border-[#16a34a] group"
                       >

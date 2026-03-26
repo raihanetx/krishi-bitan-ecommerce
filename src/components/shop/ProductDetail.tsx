@@ -531,76 +531,36 @@ export default function ProductDetail({ setView, addToCart }: ProductDetailProps
             <i className="ri-flashlight-fill" style={{ fontSize: '18px' }}></i> ক্যাশ অন ডেলিভারিতে অর্ডার করুন
           </button>
 
-          {/* Line 3: Direct Order via Call/WhatsApp - For users not comfortable with online ordering */}
+          {/* Line 3: Direct Order via Call/WhatsApp */}
           {phoneNumber && (
             <div style={{ 
-              marginTop: '8px',
-              background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', 
-              borderRadius: '14px', 
-              border: '1px solid #fbbf24',
-              padding: '16px',
-              position: 'relative',
-              overflow: 'hidden'
+              marginTop: '12px',
+              background: 'white',
+              borderRadius: '12px', 
+              border: '1px solid #e5e7eb',
+              padding: '14px',
             }}>
-              {/* Decorative element */}
-              <div style={{
-                position: 'absolute',
-                top: '-20px',
-                right: '-20px',
-                width: '80px',
-                height: '80px',
-                background: 'rgba(251, 191, 36, 0.3)',
-                borderRadius: '50%'
-              }}></div>
-              
               {/* Header */}
               <div style={{ 
                 display: 'flex', 
-                alignItems: 'center', 
-                gap: '8px',
-                marginBottom: '10px',
-                position: 'relative',
-                zIndex: 1
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                marginBottom: '12px'
               }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  background: '#f59e0b',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
+                <i className="ri-phone-lock-line" style={{ color: '#16a34a', fontSize: '16px' }}></i>
+                <span style={{ 
+                  fontSize: '13px', 
+                  fontWeight: 600, 
+                  color: '#374151',
+                  fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif"
                 }}>
-                  <i className="ri-customer-service-2-fill" style={{ color: 'white', fontSize: '18px' }}></i>
-                </div>
-                <div>
-                  <h4 style={{ 
-                    fontSize: '14px', 
-                    fontWeight: 700, 
-                    color: '#92400e', 
-                    margin: 0,
-                    fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif"
-                  }}>
-                    অনলাইন অর্ডারে সমস্যা হচ্ছে?
-                  </h4>
-                  <p style={{ 
-                    fontSize: '12px', 
-                    color: '#b45309', 
-                    margin: 0,
-                    fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif"
-                  }}>
-                    সরাসরি কল বা হোয়াটসঅ্যাপে অর্ডার করুন
-                  </p>
-                </div>
+                  সরাসরি অর্ডার করতে যোগাযোগ করুন
+                </span>
               </div>
               
               {/* Contact Buttons */}
-              <div style={{ 
-                display: 'flex', 
-                gap: '10px',
-                position: 'relative',
-                zIndex: 1
-              }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
                 {/* Call Button */}
                 <a 
                   href={`tel:+${phoneNumber.replace(/\D/g, '')}`} 
@@ -610,36 +570,24 @@ export default function ProductDetail({ setView, addToCart }: ProductDetailProps
                     alignItems: 'center', 
                     justifyContent: 'center',
                     gap: '8px', 
-                    padding: '12px 16px',
-                    background: 'white', 
+                    padding: '12px',
+                    background: '#16a34a', 
                     borderRadius: '10px',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                     textDecoration: 'none',
-                    transition: 'all 0.15s ease'
                   }}
                 >
-                  <div style={{
-                    width: '28px',
-                    height: '28px',
-                    background: '#16a34a',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <i className="ri-phone-fill" style={{ color: 'white', fontSize: '14px' }}></i>
-                  </div>
+                  <i className="ri-phone-fill" style={{ color: 'white', fontSize: '16px' }}></i>
                   <div style={{ textAlign: 'left' }}>
                     <span style={{ 
                       display: 'block',
-                      fontSize: '11px', 
-                      color: '#6b7280',
+                      fontSize: '10px', 
+                      color: 'rgba(255,255,255,0.8)',
                       fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif"
                     }}>কল করুন</span>
                     <span style={{ 
                       fontSize: '13px', 
                       fontWeight: 700, 
-                      color: '#111827'
+                      color: 'white'
                     }}>{phoneNumber}</span>
                   </div>
                 </a>
@@ -655,36 +603,24 @@ export default function ProductDetail({ setView, addToCart }: ProductDetailProps
                     alignItems: 'center', 
                     justifyContent: 'center',
                     gap: '8px', 
-                    padding: '12px 16px',
-                    background: 'white', 
+                    padding: '12px',
+                    background: '#25D366', 
                     borderRadius: '10px',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                     textDecoration: 'none',
-                    transition: 'all 0.15s ease'
                   }}
                 >
-                  <div style={{
-                    width: '28px',
-                    height: '28px',
-                    background: '#25D366',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <i className="ri-whatsapp-fill" style={{ color: 'white', fontSize: '14px' }}></i>
-                  </div>
+                  <i className="ri-whatsapp-fill" style={{ color: 'white', fontSize: '16px' }}></i>
                   <div style={{ textAlign: 'left' }}>
                     <span style={{ 
                       display: 'block',
-                      fontSize: '11px', 
-                      color: '#6b7280',
+                      fontSize: '10px', 
+                      color: 'rgba(255,255,255,0.8)',
                       fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif"
                     }}>হোয়াটসঅ্যাপ</span>
                     <span style={{ 
                       fontSize: '13px', 
                       fontWeight: 700, 
-                      color: '#111827'
+                      color: 'white'
                     }}>{whatsappNumber}</span>
                   </div>
                 </a>

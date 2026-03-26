@@ -48,6 +48,7 @@ declare global {
   var __dashboardCache: { data: any; timestamp: number; timeFrame: string } | undefined
   var __courierCredentials: { data: any; timestamp: number } | undefined
   var __dbAutoInitialized: boolean | undefined
+  var __shopDataLastModified: number | undefined
 }
 
 // Auto-initialize on first import (fallback mechanism)
@@ -132,6 +133,13 @@ export function clearAllCaches() {
 // Clear shop data cache only (used when admin updates products/categories)
 export function clearShopDataCache() {
   globalThis.__shopDataCache = undefined
+  // Update lastModified timestamp so frontend knows data changed
+  globalThis.__shopDataLastModified = Date.now()
+}
+
+// Get last modified timestamp (frontend uses this to check if cache is stale)
+export function getShopDataLastModified(): number {
+  return globalThis.__shopDataLastModified || Date.now()
 }
 
 // Re-export schema

@@ -166,6 +166,7 @@ let memoryCacheData: {
   settings: ShopSettings
   variantMap: Record<number, ProductVariant[]>
   lastFetch: number
+  lastModified: number // Server timestamp - used to detect changes
 } | null = null
 
 // SMART: Check localStorage for initial data (instant after refresh!)
@@ -196,7 +197,7 @@ export const useShopStore = create<ShopState>()(
       selectedCategory: null,
       lastFetch: 0,
 
-      // SMART: Single API call with background refresh
+      // SMART: Single API call with version check for instant updates
       fetchData: async () => {
         const now = Date.now()
         const { lastFetch, products, categories, settings } = get()
@@ -253,8 +254,33 @@ export const useShopStore = create<ShopState>()(
           return
         }
         
-        // SMART: Check memory cache first (instant!)
-        if (memoryCacheData && now - memoryCacheData.lastFetch < CACHE_DURATION) {
+        // ============================================
+        // SMART: Check if server has newer data (INSTANT UPDATE FIX!)
+        // ============================================
+        let serverLastModified = 0
+        try {
+          // Lightweight check - just gets timestamp, not full data
+          const versionResponse = await fetch('/api/shop-data/version', {
+            cache: 'no-store',
+          })
+          const versionData = await versionResponse.json()
+          if (versionData.success) {
+            serverLastModified = versionData.lastModified || 0
+          }
+        } catch {
+          // If version check fails, continue with normal flow
+        }
+        
+        // Get cached lastModified
+        const cachedLastModified = memoryCacheData?.lastModified || 0
+        
+        // SMART: Use cache ONLY if:
+        // 1. We have cached data
+        // 2. Cache is within time limit
+        // 3. Server doesn't have newer data (lastModified matches)
+        if (memoryCacheData && 
+            now - memoryCacheData.lastFetch < CACHE_DURATION &&
+            serverLastModified <= cachedLastModified) {
           set({
             categories: memoryCacheData.categories,
             products: memoryCacheData.products,
@@ -266,23 +292,27 @@ export const useShopStore = create<ShopState>()(
           return
         }
         
-        // SMART: Check localStorage cache (after mount, safe for hydration!)
-        if (typeof window !== 'undefined') {
+        // SMART: Check localStorage cache (only if server doesn't have newer data)
+        if (typeof window !== 'undefined' && serverLastModified <= cachedLastModified) {
           try {
             const raw = localStorage.getItem(`cache_${LOCAL_CACHE_KEY}`)
             if (raw) {
               const cached = JSON.parse(raw)
               if (cached.expiry && now < cached.expiry && cached.data) {
-                memoryCacheData = cached.data
-                set({
-                  categories: cached.data.categories,
-                  products: cached.data.products,
-                  settings: cached.data.settings,
-                  variantMap: cached.data.variantMap,
-                  isLoading: false,
-                  settingsLoaded: true,
-                })
-                return
+                // Check if localStorage cache has lastModified
+                const localLastModified = cached.data.lastModified || 0
+                if (serverLastModified <= localLastModified) {
+                  memoryCacheData = cached.data
+                  set({
+                    categories: cached.data.categories,
+                    products: cached.data.products,
+                    settings: cached.data.settings,
+                    variantMap: cached.data.variantMap,
+                    isLoading: false,
+                    settingsLoaded: true,
+                  })
+                  return
+                }
               }
             }
           } catch {
@@ -293,18 +323,24 @@ export const useShopStore = create<ShopState>()(
         // If we have stale data, show it immediately then refresh in background
         const hasData = products.length > 0 || categories.length > 0
         
-        if (hasData) {
+        if (hasData && serverLastModified <= cachedLastModified) {
           // Show existing data, don't show loading spinner
           if (now - lastFetch < CACHE_DURATION) {
             return // Already fresh enough
           }
         } else {
+          // Server has newer data or no cached data - show loading
           set({ isLoading: true, error: null })
         }
 
         try {
           // SINGLE API CALL - lightning fast!
-          const response = await fetch('/api/shop-data')
+          const response = await fetch('/api/shop-data', {
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache',
+            }
+          })
           const result = await response.json()
           
           if (result.success) {
@@ -326,12 +362,15 @@ export const useShopStore = create<ShopState>()(
               })
             }
 
+            const lastModified = result.lastModified || serverLastModified || now
+            
             const newData = {
               categories: result.data.categories,
               products: result.data.products,
               settings: result.data.settings,
               variantMap: variantMap,
               lastFetch: now,
+              lastModified,
             }
 
             // SMART: Update memory cache (instant access)

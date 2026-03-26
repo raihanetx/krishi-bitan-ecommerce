@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db, getCachedShopData, setCachedShopData, clearShopDataCache } from '@/db'
+import { db, getCachedShopData, setCachedShopData, clearShopDataCache, getShopDataLastModified } from '@/db'
 import { categories, products, settings, variants } from '@/db/schema'
 import { isApiAuthenticated, authErrorResponse } from '@/lib/api-auth'
 
@@ -59,10 +59,13 @@ export async function GET() {
   
   // Check global cache
   const cached = getCachedShopData()
+  const lastModified = getShopDataLastModified()
+  
   if (cached && (now - cached.timestamp) < CACHE_TTL) {
     return NextResponse.json({
       success: true,
       cached: true,
+      lastModified,
       data: cached.data
     }, { headers: HTTP_CACHE_HEADERS })
   }
@@ -194,6 +197,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       cached: false,
+      lastModified,
       data: resultData
     }, { headers: HTTP_CACHE_HEADERS })
   } catch (error) {
@@ -206,6 +210,7 @@ export async function GET() {
         success: true,
         cached: true,
         stale: true,
+        lastModified,
         data: cached.data
       }, { headers: HTTP_CACHE_HEADERS })
     }

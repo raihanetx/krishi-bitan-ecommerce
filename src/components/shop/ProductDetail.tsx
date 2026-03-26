@@ -147,9 +147,9 @@ export default function ProductDetail({ setView, addToCart }: ProductDetailProps
     }
   }, [fetchData, settingsLoaded])
   
-  // Get phone numbers - use settings or fallback to environment variables
-  const phoneNumber = settings.phoneNumber || process.env.NEXT_PUBLIC_PHONE_NUMBER || ''
-  const whatsappNumber = settings.whatsappNumber || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || phoneNumber
+  // Get phone numbers from admin settings
+  const phoneNumber = settings.phoneNumber || ''
+  const whatsappNumber = settings.whatsappNumber || phoneNumber
   
   // Get product images - use database images or fallback to main product image
   const productImages = selectedProductImages.length > 0 

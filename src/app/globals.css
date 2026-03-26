@@ -133,14 +133,30 @@ body {
 .fade-in { /* Instant appearance */ }
 @keyframes fadeIn { from { opacity: 1; } to { opacity: 1; } }
 
-/* Page transitions - NO ANIMATIONS, instant page loads */
+/* Page transitions - Smooth but fast */
 .page-fade-in {
-  /* No animation */
+  animation: pageSmoothIn 0.2s ease-out forwards;
 }
 
-/* Simple fade-in animation - disabled for smooth page transitions */
-.animate-fade-in { /* Disabled */ }
-@keyframes simpleFadeIn { from { opacity: 1; } to { opacity: 1; } }
+@keyframes pageSmoothIn {
+  0% {
+    opacity: 0.85;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Smooth fade-in - quick and elegant */
+.animate-fade-in { 
+  animation: smoothFade 0.18s ease-out forwards;
+}
+@keyframes smoothFade { 
+  from { opacity: 0.8; } 
+  to { opacity: 1; } 
+}
 .animate-fade-in-up { /* Disabled */ }
 @keyframes fadeInUp { from { opacity: 1; } to { opacity: 1; } }
 .animate-scale-in { animation: scaleIn 0.2s ease-out forwards; }
@@ -190,9 +206,20 @@ body {
   }
 }
 
-/* ===== CONTENT FADE-IN ANIMATION - Subtle, non-intrusive ===== */
+/* ===== CONTENT FADE-IN ANIMATION - Subtle and smooth ===== */
 .content-fade-in {
-  /* Instant appearance - no animation to prevent double-fade with page transition */
+  animation: contentSmooth 0.25s ease-out forwards;
+}
+
+@keyframes contentSmooth {
+  0% {
+    opacity: 0.7;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Simple fade-in for main content after loading - disabled for smooth transitions */
@@ -210,10 +237,30 @@ body {
   100% { opacity: 1; transform: none; }
 }
 
-/* Staggered animation for grid items - very subtle, no transform */
+/* Staggered animation for grid items - smooth cascade */
 .content-fade-in-stagger > * {
-  opacity: 1; /* Start visible */
-  animation: none; /* No animation - instant appearance */
+  opacity: 0;
+  animation: staggerFade 0.2s ease-out forwards;
+}
+
+.content-fade-in-stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.content-fade-in-stagger > *:nth-child(2) { animation-delay: 0.04s; }
+.content-fade-in-stagger > *:nth-child(3) { animation-delay: 0.06s; }
+.content-fade-in-stagger > *:nth-child(4) { animation-delay: 0.08s; }
+.content-fade-in-stagger > *:nth-child(5) { animation-delay: 0.10s; }
+.content-fade-in-stagger > *:nth-child(6) { animation-delay: 0.12s; }
+.content-fade-in-stagger > *:nth-child(7) { animation-delay: 0.14s; }
+.content-fade-in-stagger > *:nth-child(8) { animation-delay: 0.16s; }
+
+@keyframes staggerFade {
+  0% {
+    opacity: 0.5;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ============================================
@@ -707,13 +754,20 @@ body {
   }
 }
 
+/* Content enter animation - smooth reveal */
 .content-enter {
-  /* No animation - instant appearance */
+  animation: contentEnterSmooth 0.22s ease-out forwards;
 }
 
-@keyframes contentEnter {
-  from { opacity: 1; }
-  to { opacity: 1; }
+@keyframes contentEnterSmooth {
+  0% {
+    opacity: 0.75;
+    transform: translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 

@@ -83,8 +83,7 @@ export default function Shop({ setView, addToCart, onCategoryClick }: ShopProps)
   const router = useRouter()
   const { categories, products, settings, isLoading, error, fetchData, setSelectedProduct, searchQuery, setSearchQuery, lastFetch, variantMap, settingsLoaded } = useShopStore()
   
-  // Track cart animation states: 'adding' | 'added'
-  const [addingProducts, setAddingProducts] = useState<Set<number>>(new Set())
+  // Track cart animation state - only 'added' now (instant feedback)
   const [addedProducts, setAddedProducts] = useState<Set<number>>(new Set())
   
   // Refs for setTimeout cleanup (prevent memory leaks)
@@ -178,7 +177,7 @@ export default function Shop({ setView, addToCart, onCategoryClick }: ShopProps)
     setSelectedProduct(productId)
   }
   
-  // Handle add to cart with step-by-step animation
+  // Handle add to cart - INSTANT action, no delay!
   const handleAddToCart = useCallback((productId: number, item: CartItem) => {
     // Clear any existing timeouts for this product
     const existingTimeout = addToCartTimeoutsRef.current.get(productId)
@@ -186,36 +185,24 @@ export default function Shop({ setView, addToCart, onCategoryClick }: ShopProps)
       clearTimeout(existingTimeout)
     }
     
-    // Step 1: Show "যোগ হচ্ছে..." 
-    setAddingProducts(prev => new Set(prev).add(productId))
-    
-    // Actually add to cart
+    // INSTANT: Add to cart immediately
     addToCart(item)
     
-    // Step 2: After 500ms, show "যোগ হয়েছে!"
-    const timeout1 = setTimeout(() => {
-      setAddingProducts(prev => {
+    // INSTANT: Show success state immediately (no 500ms delay)
+    setAddedProducts(prev => new Set(prev).add(productId))
+    showToast()
+    
+    // Quick reset after 600ms (down from 1300ms total)
+    const timeout = setTimeout(() => {
+      setAddedProducts(prev => {
         const next = new Set(prev)
         next.delete(productId)
         return next
       })
-      setAddedProducts(prev => new Set(prev).add(productId))
-      showToast()
-      
-      // Step 3: After another 800ms, reset to normal
-      const timeout2 = setTimeout(() => {
-        setAddedProducts(prev => {
-          const next = new Set(prev)
-          next.delete(productId)
-          return next
-        })
-        addToCartTimeoutsRef.current.delete(productId)
-      }, 800)
-      
-      addToCartTimeoutsRef.current.set(productId, timeout2)
-    }, 500)
+      addToCartTimeoutsRef.current.delete(productId)
+    }, 600)
     
-    addToCartTimeoutsRef.current.set(productId, timeout1)
+    addToCartTimeoutsRef.current.set(productId, timeout)
   }, [addToCart, showToast])
 
   // Filter products with offers for the offer cards section
@@ -604,14 +591,11 @@ export default function Shop({ setView, addToCart, onCategoryClick }: ShopProps)
                             )}
                           </div>
                           <motion.button 
-                            className={`w-full text-[15px] md:text-[16px] font-semibold py-2 md:py-2.5 flex items-center justify-center gap-1.5 border-none cursor-pointer transition-all duration-300 rounded-md font-bangla ${
+                            className={`w-full text-[15px] md:text-[16px] font-semibold py-2 md:py-2.5 flex items-center justify-center gap-1.5 border-none cursor-pointer transition-all duration-150 rounded-md font-bangla ${
                               addedProducts.has(item.id) 
-                                ? 'bg-green-500 text-white scale-[1.02] shadow-lg shadow-green-500/30' 
-                                : addingProducts.has(item.id)
-                                ? 'bg-[#15803d] text-white'
+                                ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' 
                                 : 'bg-[#16a34a] text-white hover:bg-[#15803d] active:scale-95'
                             }`}
-                            whileHover={{ scale: addedProducts.has(item.id) ? 1.02 : 1.02 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={(e) => { 
                               e.stopPropagation(); 
@@ -632,18 +616,7 @@ export default function Shop({ setView, addToCart, onCategoryClick }: ShopProps)
                             }}
                           >
                             <AnimatePresence mode="wait">
-                              {addingProducts.has(item.id) ? (
-                                <motion.span
-                                  key="adding"
-                                  initial={{ opacity: 0, y: 10 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: -10 }}
-                                  className="flex items-center gap-1.5"
-                                >
-                                  <i className="ri-loader-4-line text-sm md:text-base animate-spin"></i>
-                                  যোগ হচ্ছে...
-                                </motion.span>
-                              ) : addedProducts.has(item.id) ? (
+                              {addedProducts.has(item.id) ? (
                                 <motion.span
                                   key="added"
                                   initial={{ opacity: 0, scale: 0.8 }}

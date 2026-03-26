@@ -114,11 +114,9 @@ export default function ProductDetail({ setView, addToCart }: ProductDetailProps
   
   // Refs for setTimeout cleanup (prevent memory leaks)
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const addAnimationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const resetAnimationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
   // Cart animation states
-  const [isAdding, setIsAdding] = useState(false)
   const [isAdded, setIsAdded] = useState(false)
   const { showToast } = useCartToast()
   
@@ -126,7 +124,6 @@ export default function ProductDetail({ setView, addToCart }: ProductDetailProps
   useEffect(() => {
     return () => {
       if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
-      if (addAnimationTimeoutRef.current) clearTimeout(addAnimationTimeoutRef.current)
       if (resetAnimationTimeoutRef.current) clearTimeout(resetAnimationTimeoutRef.current)
     }
   }, [])
@@ -305,14 +302,11 @@ export default function ProductDetail({ setView, addToCart }: ProductDetailProps
     }
   }
 
-  // Handle add to cart with variant and animation
+  // Handle add to cart - INSTANT action, no delay!
   const handleAddToCart = () => {
-    if (!selectedProduct || isAdding || isAdded) return
+    if (!selectedProduct) return
     
-    // Step 1: Show "যোগ হচ্ছে..."
-    setIsAdding(true)
-    
-    // Actually add to cart
+    // INSTANT: Add to cart immediately
     addToCart({
       id: selectedProduct.id,
       name: selectedProduct.name,
@@ -328,21 +322,17 @@ export default function ProductDetail({ setView, addToCart }: ProductDetailProps
       discountValue: displayDiscountValue,
     })
     
-    // Clear any existing timeouts
-    if (addAnimationTimeoutRef.current) clearTimeout(addAnimationTimeoutRef.current)
+    // INSTANT: Show success state immediately (no 500ms delay)
+    setIsAdded(true)
+    showToast()
+    
+    // Clear any existing timeout
     if (resetAnimationTimeoutRef.current) clearTimeout(resetAnimationTimeoutRef.current)
     
-    // Step 2: After 500ms, show "যোগ হয়েছে!"
-    addAnimationTimeoutRef.current = setTimeout(() => {
-      setIsAdding(false)
-      setIsAdded(true)
-      showToast()
-    }, 500)
-    
-    // Step 3: After another 800ms, reset to normal
+    // Quick reset after 600ms
     resetAnimationTimeoutRef.current = setTimeout(() => {
       setIsAdded(false)
-    }, 1300)
+    }, 600)
   }
 
   // Handle Buy Now - adds to cart ONCE (doesn't increase quantity if already exists) and navigates to checkout
@@ -484,7 +474,6 @@ export default function ProductDetail({ setView, addToCart }: ProductDetailProps
             </div>
             <button 
               onClick={handleAddToCart} 
-              disabled={isAdding || isAdded}
               style={{ 
                 flex: 1, 
                 border: '2px solid #16a34a', 
@@ -494,20 +483,16 @@ export default function ProductDetail({ setView, addToCart }: ProductDetailProps
                 fontSize: '14px', 
                 fontWeight: 700, 
                 background: 'transparent',
-                cursor: isAdding || isAdded ? 'default' : 'pointer',
+                cursor: 'pointer',
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
                 gap: '8px',
                 fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif",
-                transition: 'all 0.3s ease'
+                transition: 'all 0.15s ease'
               }}
             >
-              {isAdding ? (
-                <>
-                  <i className="ri-loader-4-line animate-spin"></i> যোগ হচ্ছে...
-                </>
-              ) : isAdded ? (
+              {isAdded ? (
                 <>
                   <i className="ri-checkbox-circle-fill"></i> যোগ হয়েছে!
                 </>

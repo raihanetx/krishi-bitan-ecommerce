@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { CartItem, ViewType, Review } from '@/types'
 import { useShopStore } from '@/store/useShopStore'
+import { useCartStore } from '@/store/useCartStore'
 import { ProductDetailSkeleton, ProductCardSkeleton } from '@/components/ui/skeleton'
 import { roundPrice } from '@/lib/utils'
 import { useCartToast } from '@/components/ui/CartToast'
@@ -229,15 +230,17 @@ export default function ProductDetail({ setView, addToCart }: ProductDetailProps
     return <ProductDetailSkeleton />
   }
   
-  // Handle clicking on a related product
-  const handleRelatedProductClick = async (productId: number, productName: string) => {
-    // Reset state before changing product
+  // Handle clicking on a related product - navigate IMMEDIATELY for instant feel
+  const handleRelatedProductClick = (productId: number, productName: string) => {
+    // Navigate immediately for instant response
+    const slug = createProductSlug(productName)
+    router.push(`/${slug}`)
+    
+    // Reset state and load product data in background
     setSelectedVariantIndex(0)
     setQuantity(1)
     setSelectedImageIndex(0)
-    await setSelectedProduct(productId)
-    const slug = createProductSlug(productName)
-    router.push(`/${slug}`)
+    setSelectedProduct(productId)
     window.scrollTo(0, 0)
   }
 
@@ -342,12 +345,13 @@ export default function ProductDetail({ setView, addToCart }: ProductDetailProps
     }, 1300)
   }
 
-  // Handle Buy Now - adds to cart and navigates to checkout
+  // Handle Buy Now - adds to cart ONCE (doesn't increase quantity if already exists) and navigates to checkout
   const handleBuyNow = () => {
     if (!selectedProduct) return
     
-    // Add current product with selected variant to cart first
-    addToCart({
+    // Use addItemOnce - if product already in cart, keep existing quantity (don't increase)
+    const { addItemOnce } = useCartStore.getState()
+    addItemOnce({
       id: selectedProduct.id,
       name: selectedProduct.name,
       price: displayPrice,
@@ -362,7 +366,7 @@ export default function ProductDetail({ setView, addToCart }: ProductDetailProps
       discountValue: displayDiscountValue,
     })
     
-    // Then navigate to checkout
+    // Navigate to checkout immediately
     router.push('/checkout')
   }
 

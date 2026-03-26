@@ -168,11 +168,14 @@ export default function Shop({ setView, addToCart, onCategoryClick }: ShopProps)
     }
   }
 
-  // Handle product click - navigate to product details page with product name in URL
-  const handleProductClick = async (productId: number, productName: string) => {
-    await setSelectedProduct(productId)
+  // Handle product click - navigate IMMEDIATELY for instant feel, load data in parallel
+  const handleProductClick = (productId: number, productName: string) => {
+    // Navigate immediately for instant response
     const slug = createProductSlug(productName)
     router.push(`/${slug}`)
+    
+    // Load product data in background (don't wait for it)
+    setSelectedProduct(productId)
   }
   
   // Handle add to cart with step-by-step animation

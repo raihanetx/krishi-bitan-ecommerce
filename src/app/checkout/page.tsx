@@ -10,7 +10,7 @@ import { useAppRouter } from '@/hooks/useAppRouter'
 function CheckoutContent() {
   const router = useRouter()
   const { navigate } = useAppRouter()
-  const { items: cartItems, removeItem, clearCart, isHydrated } = useCartStore()
+  const { items: cartItems, removeItem, updateQuantity, clearCart, isHydrated } = useCartStore()
   const { addOrder } = useOrderStore()
   const { fetchData } = useShopStore()
   
@@ -178,8 +178,8 @@ function CheckoutContent() {
           console.log('Navigating to thank-you with orderNumber:', orderNumber)
         }
         
-        // Navigate to thank you page
-        navigate('thank-you', { orderNumber })
+        // Navigate to thank you page IMMEDIATELY - use router.push directly for fastest navigation
+        router.push(`/thank-you?order=${orderNumber}`)
       } else {
         // Throw error so Checkout component can handle it
         throw new Error(result.error || 'Failed to place order')
@@ -224,6 +224,7 @@ function CheckoutContent() {
       deliverySettings={deliverySettings}
       onConfirm={handleConfirmOrder}
       onRemoveItem={(id) => removeItem(id)}
+      onUpdateQuantity={(id, qty) => updateQuantity(id, qty)}
     />
   )
 }

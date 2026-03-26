@@ -23,6 +23,7 @@ interface CartState {
   // Track if user explicitly added items (not from localStorage restore)
   userAddedToCart: boolean
   addItem: (item: CartItem) => void
+  addItemOnce: (item: CartItem) => void // Add without increasing quantity if exists
   removeItem: (id: number) => void
   updateQuantity: (id: number, qty: number) => void
   clearCart: () => void
@@ -97,6 +98,7 @@ export const useCartStore = create<CartState>()(
         set({ userAddedToCart: value })
       },
 
+      // Regular add - increases quantity if already in cart
       addItem: (item: CartItem) => {
         // Mark that user explicitly added to cart
         set({ userAddedToCart: true })
@@ -142,6 +144,40 @@ export const useCartStore = create<CartState>()(
             get().checkCouponValidity()
           }
         }
+      },
+
+      // Add item ONCE - does NOT increase quantity if already exists
+      // Used for "Buy Now" button
+      addItemOnce: (item: CartItem) => {
+        // Mark that user explicitly added to cart
+        set({ userAddedToCart: true })
+        
+        set((state) => {
+          const existingItemIndex = state.items.findIndex((i) => i.id === item.id)
+          
+          if (existingItemIndex >= 0) {
+            // Product already exists - DO NOT increase quantity
+            // Just update the item data (price, variant, etc.)
+            const updatedItems = [...state.items]
+            const existingItem = updatedItems[existingItemIndex]
+            updatedItems[existingItemIndex] = {
+              ...existingItem,
+              // Keep existing quantity, just update other fields
+              price: item.price,
+              weight: item.weight,
+              discountType: item.discountType,
+              discountValue: item.discountValue,
+              offer: item.offer,
+            }
+            return { items: updatedItems }
+          }
+          
+          // New product - add to cart with the quantity specified
+          return { items: [...state.items, { ...item, quantity: item.quantity || 1 }] }
+        })
+        
+        // Track cart addition
+        trackCartEvent(item.id, 'add')
       },
 
       removeItem: (id: number) => {

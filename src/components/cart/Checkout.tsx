@@ -20,6 +20,7 @@ interface CheckoutProps {
   deliverySettings?: DeliverySettings
   onCheckoutSession?: (sessionId: string) => void
   onRemoveItem?: (id: number) => void
+  onUpdateQuantity?: (id: number, qty: number) => void
 }
 
 interface ValidatedCoupon {
@@ -37,7 +38,7 @@ const dhakaKeywords = ['dhaka', 'dhanmondi', 'gulshan', 'uttara', 'mirpur', 'moh
 const SESSION_KEY = 'ecomart_customer_session'
 const DELIVERY_LOCATION_KEY = 'ecomart_delivery_location'
 
-export default function Checkout({ setView, onConfirm, cartItems = [], deliveryCharge = 60, deliverySettings, onCheckoutSession, onRemoveItem }: CheckoutProps) {
+export default function Checkout({ setView, onConfirm, cartItems = [], deliveryCharge = 60, deliverySettings, onCheckoutSession, onRemoveItem, onUpdateQuantity }: CheckoutProps) {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [address, setAddress] = useState('')
@@ -403,7 +404,42 @@ export default function Checkout({ setView, onConfirm, cartItems = [], deliveryC
                         }}></span>
                       )}
                     </h4>
-                    <span style={{ fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif" }}>পরিমাণ: {item.quantity || 1}</span>
+                    {/* Quantity controls */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                      <button
+                        onClick={() => onUpdateQuantity && onUpdateQuantity(item.id, Math.max(1, (item.quantity || 1) - 1))}
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '6px',
+                          border: '1px solid #e2e8f0',
+                          background: 'white',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          color: '#64748b',
+                          fontSize: '14px'
+                        }}
+                      ><i className="ri-subtract-line"></i></button>
+                      <span style={{ fontSize: '14px', fontWeight: 600, color: '#374151', minWidth: '20px', textAlign: 'center' }}>{item.quantity || 1}</span>
+                      <button
+                        onClick={() => onUpdateQuantity && onUpdateQuantity(item.id, (item.quantity || 1) + 1)}
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '6px',
+                          border: '1px solid #e2e8f0',
+                          background: 'white',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          color: '#64748b',
+                          fontSize: '14px'
+                        }}
+                      ><i className="ri-add-line"></i></button>
+                    </div>
                   </div>
                   <div className="chk-prod-price">TK {Math.round(item.price * (item.quantity || 1))}</div>
                   {onRemoveItem && (

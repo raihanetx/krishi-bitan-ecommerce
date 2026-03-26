@@ -6,6 +6,7 @@ import { useShopStore } from '@/store'
 interface OrdersProps {
   orders: Order[]
   setView: (v: ViewType, params?: Record<string, string>) => void
+  isLoading?: boolean
 }
 
 // Enhanced status configuration with Bengali labels
@@ -113,10 +114,13 @@ const getStatusConfig = (order: Order): StatusConfig => {
   }
 }
 
-export default function Orders({ orders, setView }: OrdersProps) {
+export default function Orders({ orders, setView, isLoading = false }: OrdersProps) {
   // Get free delivery minimum from store - MUST be at top before any early returns
   const { settings } = useShopStore()
   const freeDeliveryMin = settings.freeDeliveryMin || 599
+  
+  // Show loading overlay when fetching updates
+  const showLoadingOverlay = isLoading && orders.length > 0
 
   if (orders.length === 0) {
     return (
@@ -172,6 +176,13 @@ export default function Orders({ orders, setView }: OrdersProps) {
 
   return (
     <div className="order-clean-wrapper" style={{ paddingBottom: '80px' }}>
+      {/* Loading overlay when fetching updates */}
+      {showLoadingOverlay && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-green-600 text-white py-2 px-4 flex items-center justify-center gap-2 text-sm font-bangla shadow-lg">
+          <i className="ri-refresh-line animate-spin"></i>
+          অর্ডার স্ট্যাটাস আপডেট হচ্ছে...
+        </div>
+      )}
       <div className="order-clean-container">
         {/* Free Delivery Section */}
         <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg p-4 mb-4 shadow-lg">
